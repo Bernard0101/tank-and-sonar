@@ -19,8 +19,8 @@ try:
     plt.ion()
     fix, ax = plt.subplots()
     line_plot, = ax.plot([], [], 'r-')
-    ax.set_xlabel('distance (cm)')
-    ax.set_ylabel('position of servo (degrees)')
+    ax.set_ylabel('distance (cm)')
+    ax.set_xlabel('position of servo (degrees)')
     ax.set_title('interactive sonar')
     ax.grid(True)
 
@@ -36,8 +36,8 @@ try:
                 positions.append(pos)
 
                 #update plots data
-                line_plot.set_xdata(distances)
-                line_plot.set_ydata(positions)
+                line_plot.set_ydata(distances)
+                line_plot.set_xdata(positions)
                 ax.relim()
                 ax.autoscale_view()
 
