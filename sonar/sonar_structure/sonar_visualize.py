@@ -1,58 +1,56 @@
 import serial 
-import matplotlib.pyplot
-from drawnow import drawnow 
-import time  
-
-arduino_port = '/dev/ttyUSB0'
-baud_rate = 9600
-arduino_data = serial.Serial(arduino_port, baud_rate)
-time.sleep(2)
-
-angles = []
-distances = []
-
-def plot_sonar():
-    # Plotar os dados como um gráfico de radar
-    ax = plt.subplot(111, polar=True)
-    ax.set_theta_offset(np.pi / 2)  # Alinhar o gráfico para cima
-    ax.set_theta_direction(-1)  # Sentido anti-horário
-
-    angles_rad = np.deg2rad(angles)  # Convertendo para radianos
-
-    ax.plot(angles_rad, distances, color='b', linewidth=2)
-    ax.fill(angles_rad, distances, color='b', alpha=0.3)
-
-    # Configurações do gráfico
-    ax.set_ylim(0, max(distances))
-    ax.set_title('Sonar 180°', va='bottom')
-    plt.draw()
-    plt.pause(0.001)
+import matplotlib.pyplot as plt
+import time
 
 
-def main():
-    angles = []
-    distances = []
+#port configuration
+bluetooth_port = "/dev/ttyUSB0"
+baud_rate = 9600;
+timeout=1
 
-    plt.ion()  # Ativar modo interativo
-    fig = plt.figure()
+#initilizing Serial communication
+ser= serial.Serial(bluetooth_port, baud_rate, timeout=timeout)
 
-    try:
-        while True:
-            line = ser.readline().decode('utf-8').strip()
-            if line:
-                try:
-                    angle, distance = map(int, line.split(','))
-                    angles.append(angle)
-                    distances.append(distance)
+positions=[]
+distances=[]
 
-                    if angle == 180:  # Atualizar o gráfico a cada varredura completa
-                        plot_sonar(angles, distances)
-                        angles = []
-                        distances = []
-                except ValueError:
-                    continue  # Ignorar linhas que não possam ser convertidas
-    except KeyboardInterrupt:
-        ser.close()
-        print("Conexão serial encerrada.")
-        plt.close()
+#initial interactive plotting setup
+try:
+    plt.ion()
+    fix, ax = plt.subplots()
+    line_plot, = ax.plot([], [], 'r-')
+    ax.set_xlabel('distance (cm)')
+    ax.set_ylabel('position of servo (degrees)')
+    ax.set_title('interactive sonar')
+    ax.grid(True)
 
+    #loop for data reading
+    while True:
+        Serial_line = ser.readline().decode('utf-8', errors='ignore').strip()
+        if Serial_line:
+            try:
+                pos, distance = map(int, Serial_line.split(','))
+                print(f"position: {pos}")
+                print(f"distance: {distance}")
+                distances.append(distance)
+                positions.append(pos)
+
+                #update plots data
+                line_plot.set_xdata(distances)
+                line_plot.set_ydata(positions)
+                ax.relim()
+                ax.autoscale_view()
+
+                plt.draw()
+                plt.pause(0.01)
+
+
+            except ValueError:
+                print(f"Error could not read serial communication")
+
+except KeyboardInterrupt:
+    print("exiting")
+finally:
+    ser.close()
+    plt.ioff()
+    plt.show()

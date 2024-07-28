@@ -8,6 +8,7 @@ int distance;
 
 void setup(){
   Serial.begin(9600);
+
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
   servo.attach(2);
